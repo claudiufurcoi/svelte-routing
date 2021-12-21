@@ -16,7 +16,7 @@ Route.svelte
 Link.svelte 
 utils.js `
 
-It regards only the use of <Link /> inside the <Router /> component. 
+It regards only the use of `<Link />` inside the `<Router />` component. 
 
 ## Getting started
 
