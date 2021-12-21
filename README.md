@@ -4,6 +4,20 @@
 
 A declarative Svelte routing library with SSR support.
 
+## New in this fork
+
+Added browser extension refresh support: introduced a few tweaks to allow the use of hashtag char
+in the URL for browser extensions apps, hence allowing refresh of the page without breaking.
+
+## Components changed
+
+`Router.svelte 
+Route.svelte
+Link.svelte 
+utils.js `
+
+It regards only the use of <Link /> inside the <Router /> component. 
+
 ## Getting started
 
 Look at the [example folder][example-folder-url] for an example project setup.
@@ -83,7 +97,8 @@ The `Router` component supplies the `Link` and `Route` descendant components wit
 |  Property  | Required | Default Value | Description                                                                                                                                                                                                                                                                                                 |
 | :--------: | :------: | :-----------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `basepath` |          |     `'/'`     | The `basepath` property will be added to all the `to` properties of `Link` descendants and to all `path` properties of `Route` descendants. This property can be ignored in most cases, but if you host your application on e.g. `https://example.com/my-site`, the `basepath` should be set to `/my-site`. |
-|   `url`    |          |     `''`      | The `url` property is used in SSR to force the current URL of the application and will be used by all `Link` and `Route` descendants. A falsy value will be ignored by the `Router`, so it's enough to declare `export let url = '';` for your topmost component and only give it a value in SSR.           |
+|   `url`    |          |     `''`      | The `url` property is used in SSR to force the current URL of the application and will be used by all `Link` and `Route` descendants. A falsy value will be ignored by the `Router`, so it's enough to declare `export let url = '';` for your topmost component and only give it a value in SSR.           <br/>|
+|  `hashed`  |          |    `false`    | The `hashed` property is used to force the use of the hastag char in the routes url: usefull for refreshing the browser extensions routes which do not have physical pages for the routes. If not declared or false, the default behaviour is implemented where the route uses "/" delimiter in the url.    |
 
 #### `Link`
 
@@ -98,6 +113,8 @@ A component used to navigate around the application.
 |  `state`   |          |     `{}`      | An object that will be pushed to the history stack when the `Link` is clicked.                                                                                                                                                                                                                                                                                                            |
 | `getProps` |          | `() => ({})`  | A function that returns an object that will be spread on the underlying anchor element's attributes. The first argument given to the function is an object with the properties `location`, `href`, `isPartiallyCurrent`, `isCurrent`. Look at the [`NavLink` component in the example project setup][example-folder-navlink] to see how you can build your own link components with this. |
 
+In order to have the hashtag (#) in the URL, all the routes must have the `to` property starting with the hashtag. (see underlying example)
+
 #### `Route`
 
 A component that will render its `component` property or children when its ancestor `Router` component decides it is the best match.
@@ -107,6 +124,30 @@ All properties other than `path` and `component` given to the `Route` will be pa
 Potential path parameters will be passed to the rendered `component` as properties. A wildcard `*` can be given a name with `*wildcardName` to pass the wildcard string as the `wildcardName` property instead of as the `*` property.
 
 Potential path parameters are passed back to the parent using props, so they can be exposed to the slot template using `let:params`.
+
+## Usage example using the hashtag property 
+
+THe `hashed` property is set to true. 
+
+const hashed = true;
+
+<Router url="{url}" {hashed}>
+    <nav>
+        <Link to="/">Home</Link>
+        <Link to="#about">About</Link>
+        <Link to="#blog">Blog</Link>
+    </nav>
+    <div>
+        <Route path="#blog/:id" component="{BlogPost}" />
+        <Route path="#blog" component="{Blog}" />
+        <Route path="#about" component="{About}" />
+        <Route path="/"><Home /></Route>
+    </div>
+</Router>
+
+
+
+
 
 ```html
 <Route path="blog/:id" let:params>
