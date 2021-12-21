@@ -9,13 +9,6 @@ A declarative Svelte routing library with SSR support.
 Added browser extension refresh support: introduced a few tweaks to allow the use of hashtag char
 in the URL for browser extensions apps, hence allowing refresh of the page without breaking.
 
-## Components changed
-
-`Router.svelte 
-Route.svelte
-Link.svelte 
-utils.js `
-
 It regards only the use of `<Link />` inside the `<Router />` component. 
 
 ## Getting started
