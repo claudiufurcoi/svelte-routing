@@ -56,10 +56,10 @@ function isSplat(segment) {
  */
 function segmentize(uri) {
   return (
-    uri
-      // Strip starting/ending `/`
-      .replace(/(^\/+|\/+$)/g, "")
-      .split("/")
+      uri
+          // Strip starting/ending `/`
+          .replace(/(^\/+|\/+$)/g, "")
+          .split("/")
   );
 }
 
@@ -80,8 +80,8 @@ function stripSlashes(str) {
  */
 function rankRoute(route, index) {
   const score = route.default
-    ? 0
-    : segmentize(route.path).reduce((score, segment) => {
+      ? 0
+      : segmentize(route.path).reduce((score, segment) => {
         score += SEGMENT_POINTS;
 
         if (isRootSegment(segment)) {
@@ -97,7 +97,7 @@ function rankRoute(route, index) {
         return score;
       }, 0);
 
-  return { route, score, index };
+  return {route, score, index};
 }
 
 /**
@@ -107,12 +107,12 @@ function rankRoute(route, index) {
  */
 function rankRoutes(routes) {
   return (
-    routes
-      .map(rankRoute)
-      // If two routes have the exact same score, we go by index instead
-      .sort((a, b) =>
-        a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
-      )
+      routes
+          .map(rankRoute)
+          // If two routes have the exact same score, we go by index instead
+          .sort((a, b) =>
+              a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
+          )
   );
 }
 
@@ -166,7 +166,12 @@ function pick(routes, uri) {
     let index = 0;
 
     for (; index < max; index++) {
-      const routeSegment = routeSegments[index];
+      let routeSegment = routeSegments[index];
+      if (routeSegment.includes('#')) {
+        let idx = routeSegment.indexOf('#');
+        routeSegment = routeSegment.substring(idx, routeSegment.length);
+      }
+
       const uriSegment = uriSegments[index];
 
       if (routeSegment !== undefined && isSplat(routeSegment)) {
@@ -176,9 +181,9 @@ function pick(routes, uri) {
         const splatName = routeSegment === "*" ? "*" : routeSegment.slice(1);
 
         params[splatName] = uriSegments
-          .slice(index)
-          .map(decodeURIComponent)
-          .join("/");
+            .slice(index)
+            .map(decodeURIComponent)
+            .join("/");
         break;
       }
 
@@ -205,10 +210,14 @@ function pick(routes, uri) {
     }
 
     if (!missed) {
+      //if used the classical way(no hash), "/" needed as PREFIX
+      let PREFIX = "";
+      if (!route.path.includes("#"))
+        PREFIX = "/";
       match = {
         route,
         params,
-        uri: "/" + uriSegments.slice(0, index).join("/")
+        uri: PREFIX + uriSegments.slice(0, index).join("/")
       };
       break;
     }
@@ -311,11 +320,17 @@ function resolve(to, base) {
  * Combines the `basepath` and the `path` into one path.
  * @param {string} basepath
  * @param {string} path
+ * @param {boolean} hashed
+ *
+ * combine paths removes inside "/" allowing hashtag char (#)
  */
-function combinePaths(basepath, path) {
-  return `${stripSlashes(
-    path === "/" ? basepath : `${stripSlashes(basepath)}/${stripSlashes(path)}`
-  )}/`;
+function combinePaths(basepath, path, hashed) {
+  const base_path =
+      hashed ?
+          `${stripSlashes(basepath)}${stripSlashes(path)}` :
+          `${stripSlashes(basepath)}/${stripSlashes(path)}`;
+
+  return `${stripSlashes(path === "/" ? basepath : base_path)}`;
 }
 
 /**
@@ -324,20 +339,20 @@ function combinePaths(basepath, path) {
  */
 function shouldNavigate(event) {
   return (
-    !event.defaultPrevented &&
-    event.button === 0 &&
-    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+      !event.defaultPrevented &&
+      event.button === 0 &&
+      !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
   );
 }
 
 function hostMatches(anchor) {
   const host = location.host
   return (
-    anchor.host == host ||
-    // svelte seems to kill anchor.host value in ie11, so fall back to checking href
-    anchor.href.indexOf(`https://${host}`) === 0 ||
-    anchor.href.indexOf(`http://${host}`) === 0
+      anchor.host == host ||
+      // svelte seems to kill anchor.host value in ie11, so fall back to checking href
+      anchor.href.indexOf(`https://${host}`) === 0 ||
+      anchor.href.indexOf(`http://${host}`) === 0
   )
 }
 
-export { stripSlashes, pick, match, resolve, combinePaths, shouldNavigate, hostMatches };
+export {stripSlashes, pick, match, resolve, combinePaths, shouldNavigate, hostMatches};

@@ -9,14 +9,29 @@
   export let state = {};
   export let getProps = () => ({});
 
-  const { base } = getContext(ROUTER);
+  const { base, hashed } = getContext(ROUTER);
   const location = getContext(LOCATION);
   const dispatch = createEventDispatcher();
 
   let href, isPartiallyCurrent, isCurrent, props;
-  $: href = to === "/" ? $base.uri : resolve(to, $base.uri);
-  $: isPartiallyCurrent = startsWith($location.pathname, href);
-  $: isCurrent = href === $location.pathname;
+  /**
+   * href holds (base.uri + to) value to allow hashtag char (#)
+   * if hashtag routing used
+   */
+  if (to === "/") {
+    href = $base.uri;
+  } else if (to.startsWith("#")) {
+    href = $base.uri + to;
+  } else
+    href = resolve(to, $base.uri);
+  $: isPartiallyCurrent = hashed ?
+          startsWith($location.href, href) :
+          startsWith($location.pathname, href);
+  $: isCurrent = href === (
+          hashed ?
+                  $location.href :
+                  $location.pathname
+  );
   $: ariaCurrent = isCurrent ? "page" : undefined;
   $: props = getProps({
     location: $location,

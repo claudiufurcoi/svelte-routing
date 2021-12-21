@@ -35,6 +35,12 @@
       unregisterRoute(route);
     });
   }
+
+  // beforeUpdate(() => {
+  //   console.log('route', route);
+  //   activeRoute.subscribe(value => console.log('activeRoute', value));
+  // });
+
 </script>
 
 {#if $activeRoute !== null && $activeRoute.route === route}
